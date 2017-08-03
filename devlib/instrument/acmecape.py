@@ -113,4 +113,4 @@ class AcmeCapeInstrument(Instrument):
                     for i in active_indexes:
                         output_row.append(float(row[i])/10000)  # Convert to std units
                     writer.writerow(output_row)
-        return MeasurementsCsv(outfile, self.active_channels)
+        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)

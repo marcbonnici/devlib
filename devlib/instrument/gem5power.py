@@ -69,8 +69,8 @@ class Gem5PowerInstrument(Instrument):
             for rec, rois in self.target.gem5stats.match_iter(active_sites, 
                     [self.roi_label], self._base_stats_dump):
                 writer.writerow([float(rec[s]) for s in active_sites])
-        return MeasurementsCsv(outfile, self.active_channels)
-    
+        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+
     def reset(self, sites=None, kinds=None, channels=None):
         super(Gem5PowerInstrument, self).reset(sites, kinds, channels)
         self._base_stats_dump = self.target.gem5stats.next_dump_no()
