@@ -51,6 +51,7 @@ class Gem5PowerInstrument(Instrument):
             self.add_channel(field, 'power')
         self.target.gem5stats.book_roi(self.roi_label)
         self.sample_period_ns = 10000000
+        self.sample_rate_hz = 1 / (self.sample_period_ns * 10**-9)
         self.target.gem5stats.start_periodic_dump(0, self.sample_period_ns)
         self._base_stats_dump = 0
 
