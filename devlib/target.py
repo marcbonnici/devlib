@@ -459,6 +459,11 @@ class Target(object):
 
     # files
 
+    def get_file_size(self, filepath):
+        command = '{} stat -c %s {}'
+        result = self.execute(command.format(self.busybox, filepath))
+        return int(result.strip())
+
     def file_exists(self, filepath):
         command = 'if [ -e \'{}\' ]; then echo 1; else echo 0; fi'
         output = self.execute(command.format(filepath), as_root=self.is_rooted)
