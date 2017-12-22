@@ -279,11 +279,20 @@ class Target(object):
 
     def push(self, source, dest, as_root=False, timeout=None):  # pylint: disable=arguments-differ
         if not as_root:
+            import time
+            start_time = time.time()
             self.conn.push(source, dest, timeout=timeout)
+            elapsed_time = time.time() - start_time
+            import ipdb; ipdb.set_trace()
         else:
             device_tempfile = self.path.join(self._file_transfer_cache, source.lstrip(self.path.sep))
             self.execute("mkdir -p '{}'".format(self.path.dirname(device_tempfile)))
+            
+            import time
+            start_time = time.time()
             self.conn.push(source, device_tempfile, timeout=timeout)
+            elapsed_time = time.time() - start_time
+            import ipdb; ipdb.set_trace()
             self.execute("cp '{}' '{}'".format(device_tempfile, dest), as_root=True)
 
     def pull(self, source, dest, as_root=False, timeout=None):  # pylint: disable=arguments-differ
