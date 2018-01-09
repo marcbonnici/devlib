@@ -221,8 +221,25 @@ class Target(object):
         self.execute('mkdir -p {}'.format(self.working_directory))
         self.execute('mkdir -p {}'.format(self.executables_directory))
         self.busybox = self.install(os.path.join(PACKAGE_BIN_DIRECTORY, self.abi, 'busybox'))
-        self.platform.update_from_target(self)
         self._update_modules('connected')
+
+        # If target supports hotplugging, online all cpus before updating target
+        # and restore original configuration after completed.
+        if self.has('hotplug'):
+            online_cpus = self.list_online_cpus()
+            try:
+                self.hotplug.online_all()
+            except TargetError:
+                msg = 'Failed to online all CPUS - some information may not be '\
+                      'able to be retrieved.'
+                self.logger.debug(msg)
+
+            self.platform.update_from_target(self)
+            all_cpus = set(range(self.number_of_cpus))
+            self.hotplug.offline(*all_cpus.difference(online_cpus))
+        else:
+            self.platform.update_from_target(self)
+
         if self.platform.big_core and self.load_default_modules:
             self._install_module(get_module('bl'))
 
