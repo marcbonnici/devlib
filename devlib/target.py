@@ -1384,7 +1384,17 @@ class AndroidTarget(Target):
 
     def clear_logcat(self):
         with self.clear_logcat_lock:
-            adb_command(self.adb_name, 'logcat -c', timeout=30)
+            try:
+                adb_command(self.adb_name, 'logcat -c', timeout=30)
+            except subprocess.CalledProcessError as e:
+                # Known android bug that can fail to clear, attempt a second time.
+                try:
+                    adb_command(self.adb_name, 'logcat -c', timeout=30)
+                except subprocess.CalledProcessError as e:
+                    if 'failed to clear' in e.output:
+                        self.logger.debug(e.output.strip())
+                    else:
+                        raise
 
     def get_logcat_monitor(self, regexps=None):
         return LogcatMonitor(self, regexps)
