@@ -58,6 +58,7 @@ FSTAB_ENTRY_REGEX = re.compile(r'(\S+) on (.+) type (\S+) \((\S+)\)')
 ANDROID_SCREEN_STATE_REGEX = re.compile('(?:mPowerState|mScreenOn|Display Power: state)=([0-9]+|true|false|ON|OFF)',
                                         re.IGNORECASE)
 ANDROID_SCREEN_RESOLUTION_REGEX = re.compile(r'cur=(?P<width>\d+)x(?P<height>\d+)')
+ANDROID_NATIVE_SCREEN_RESOLUTION_REGEX = re.compile(r'SurfaceWidth: (?P<width>\d+)px.*\n.*SurfaceHeight: (?P<height>\d+)px')
 ANDROID_SCREEN_ROTATION_REGEX = re.compile(r'orientation=(?P<rotation>[0-3])')
 DEFAULT_SHELL_PROMPT = re.compile(r'^.*(shell|root|juno)@?.*:[/~]\S* *[#$] ',
                                   re.MULTILINE)
@@ -1133,6 +1134,15 @@ class AndroidTarget(Target):
                     int(match.group('height')))
         else:
             return (0, 0)
+
+    @property
+    @memoized
+    def native_screen_resolution(self):
+        output = self.execute('dumpsys input displays')
+        match = ANDROID_NATIVE_SCREEN_RESOLUTION_REGEX.search(output)
+        if match:
+            return (int(match.group('width')),
+                    int(match.group('height')))
 
     def __init__(self,
                  connection_settings=None,
