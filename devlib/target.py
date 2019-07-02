@@ -1125,7 +1125,6 @@ class AndroidTarget(Target):
         return self.execute('echo $EXTERNAL_STORAGE').strip()
 
     @property
-    @memoized
     def screen_resolution(self):
         output = self.execute('dumpsys window displays')
         match = ANDROID_SCREEN_RESOLUTION_REGEX.search(output)
