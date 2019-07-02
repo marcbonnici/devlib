@@ -1580,6 +1580,20 @@ class AndroidTarget(Target):
     def set_right_rotation(self):
         self.set_rotation(3)
 
+    def set_landscape(self):
+        width, height = self.native_screen_resolution
+        if width > height:
+            self.set_rotation(0)
+        else:
+            self.set_rotation(1)
+
+    def set_portait(self):
+        width, height = self.native_screen_resolution
+        if width > height:
+            self.set_rotation(1)
+        else:
+            self.set_rotation(0)
+
     def get_rotation(self):
         output = self.execute('dumpsys input')
         match = ANDROID_SCREEN_ROTATION_REGEX.search(output)
