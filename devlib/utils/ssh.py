@@ -166,7 +166,6 @@ class SshConnection(object):
                  keyfile=None,
                  port=None,
                  timeout=None,
-                 telnet=False,
                  password_prompt=None,
                  original_prompt=None,
                  platform=None,
