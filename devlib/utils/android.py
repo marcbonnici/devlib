@@ -347,7 +347,7 @@ class AdbConnection(ConnectionBase):
         AdbConnection._connected_as_root[self.device] = enable
 
     def wait_for_device(self, timeout=30):
-        adb_command(self.device, 'wait-for-device', timeout, self.adb_server)
+        adb_wait_for_device(self.device, timeout, self.adb_server)
 
     def reboot_bootloader(self, timeout=30):
         adb_command(self.device, 'reboot-bootloader', timeout, self.adb_server)
@@ -461,6 +461,8 @@ def adb_connect(device, timeout=None, attempts=MAX_ATTEMPTS, adb_server=None):
             message += '; got: "{}"'.format(output)
         raise HostError(message)
 
+def adb_wait_for_device(device, timeout=30, adb_server=None):
+    adb_command(device, 'wait-for-device', timeout, adb_server)
 
 def adb_disconnect(device, adb_server=None):
     _check_env()
