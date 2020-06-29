@@ -337,7 +337,7 @@ class Target(object):
 
         self.execute('mkdir -p {}'.format(quote(self._file_transfer_cache)))
 
-    def reboot(self, hard=False, connect=True, timeout=180):
+    def reboot(self, hard=False, connect=True, timeout=180, reset_delay=20):
         if hard:
             if not self.has('hard_reset'):
                 raise TargetStableError('Hard reset not supported for this target.')
@@ -353,7 +353,6 @@ class Target(object):
             # shut down, otherwise, might create the connection while it's still shutting
             # down resulting in subsequent connection failing.
             self.logger.debug('Waiting for target to power down...')
-            reset_delay = 20
             time.sleep(reset_delay)
             timeout = max(timeout - reset_delay, 10)
         if self.has('boot'):
