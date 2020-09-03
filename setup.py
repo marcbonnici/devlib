@@ -89,8 +89,8 @@ params = dict(
         'contextlib2;python_version<"3.0"', # Python 3 contextlib backport for Python 2
         'numpy<=1.16.4; python_version<"3"',
         'numpy; python_version>="3"',
-        'pandas<=0.24.2; python_version<"3"',
-        'pandas; python_version>"3"',
+        'pandas<1.0; python_version<"3.6"',  # Data analysis and manipulation
+        'pandas; python_version>="3.6"',  # Data analysis and manipulation
     ],
     extras_require={
         'daq': ['daqpower>=2'],
