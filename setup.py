@@ -78,6 +78,10 @@ params = dict(
     url='https://github.com/ARM-software/devlib',
     license='Apache v2',
     maintainer='ARM Ltd.',
+    setup_requires=[
+        'numpy<=1.18.5; python_version<"3.6"',
+        'numpy; python_version>="3.6"',
+    ],
     install_requires=[
         'python-dateutil',  # converting between UTC and local time.
         'pexpect>=3.3',  # Send/recieve to/from device
@@ -87,8 +91,6 @@ params = dict(
         'future', # Python 2-3 compatibility
         'enum34;python_version<"3.4"', # Enums for Python < 3.4
         'contextlib2;python_version<"3.0"', # Python 3 contextlib backport for Python 2
-        'numpy<=1.16.4; python_version<"3"',
-        'numpy; python_version>="3"',
         'pandas<1.0; python_version<"3.6"',  # Data analysis and manipulation
         'pandas; python_version>="3.6"',  # Data analysis and manipulation
     ],
