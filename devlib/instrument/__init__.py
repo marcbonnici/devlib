@@ -19,8 +19,9 @@ import collections
 from past.builtins import basestring
 
 from devlib.utils.csvutil import csvreader
-from devlib.utils.types import numeric
+from devlib.utils.types import numeric, caseless_string
 from devlib.utils.types import identifier
+from devlib.collector import CollectorOutputEntry, CollectorOutput
 
 
 # Channel modes describe what sort of measurement the instrument supports.
@@ -144,6 +145,14 @@ _measurement_types = [
 ]
 for m in _measurement_types:
     MEASUREMENT_TYPES[m.name] = m
+
+
+
+class InstrumentOutputEntry(CollectorOutputEntry):
+    pass
+
+class InstrumentOutput(CollectorOutput):
+    pass
 
 
 class Measurement(object):
