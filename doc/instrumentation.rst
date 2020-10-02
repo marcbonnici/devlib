@@ -145,9 +145,16 @@ Instrument
              :class:`~devlib.instrument.Instrument`\ s that
              support ``CONTINUOUS`` measurement.
 
-.. method:: Instrument.get_data(outfile)
+.. method:: Instrument.set_output(outfile)
 
-   Write collected data into ``outfile``. Must be called after :func:`stop()`.
+   Configure the output path for the particular instrument. This will be either
+   a directory or file path which will be used when storing the data. Please see
+   the individual Instrument documentation for more information.
+
+.. method:: Instrument.get_data()
+
+   Write collected data into the destination previously configured.
+   Must be called after :func:`set_output(outfile)` and :func:`stop()`.
    Data will be written in CSV format with a column for each channel and a row
    for each sample. Column heading will be channel, labels in the form
    ``<site>_<kind>`` (see :class:`InstrumentChannel`). The order of the columns
@@ -171,10 +178,10 @@ Instrument
 
 .. method:: Instrument.get_raw()
 
-   Returns a list of paths to files containing raw output from the underlying
-   source(s) that is used to produce the data CSV. If no raw output is
-   generated or saved, an empty list will be returned. The format of the
-   contents of the raw files is entirely source-dependent.
+   Returns a ``InstrumentOutput`` list of paths to files containing raw output
+   from the underlying source(s) that is used to produce the data CSV. If no
+   raw output is generated or saved, an empty list will be returned. The format
+   of the contents of the raw files is entirely source-dependent.
 
   .. note:: This method is not guaranteed to return valid filepaths after the
             :meth:`teardown` method has been invoked as the raw files may have

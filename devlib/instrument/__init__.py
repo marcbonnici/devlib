@@ -155,7 +155,7 @@ class InstrumentOutput(CollectorOutput):
     pass
 
 
-class Measurement(object):
+class Measurement(InstrumentOutputEntry):
 
     __slots__ = ['value', 'channel']
 
@@ -168,7 +168,7 @@ class Measurement(object):
         return self.channel.units
 
     def __init__(self, value, channel):
-        self.value = value
+        super(MeasurementsCsv).__init__(value, 'metric')
         self.channel = channel
 
     # pylint: disable=undefined-variable
@@ -187,9 +187,10 @@ class Measurement(object):
     __repr__ = __str__
 
 
-class MeasurementsCsv(object):
+class MeasurementsCsv(InstrumentOutputEntry):
 
     def __init__(self, path, channels=None, sample_rate_hz=None):
+        super(MeasurementsCsv).__init__(path, 'file')
         self.path = path
         self.channels = channels
         self.sample_rate_hz = sample_rate_hz
@@ -354,9 +355,12 @@ class Instrument(object):
     def stop(self):
         pass
 
+    def set_output(self, output_path):
+        self.output_path = output_path
+
     # pylint: disable=no-self-use
-    def get_data(self, outfile):
+    def get_data(self):
         pass
 
     def get_raw(self):
-        return []
+        return InstrumentOutput()
