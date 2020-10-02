@@ -51,22 +51,28 @@ class CollectorBase(object):
 
 class CollectorOutputEntry(object):
 
-    path_kinds = ['file', 'directory']
+    kinds = ['file', 'directory', 'metric']
 
-    def __init__(self, path, path_kind):
-        self.path = path
+    @property
+    def path(self):
+        if self.kind in ['file', 'directory']:
+            return self.value
+        return None
 
-        path_kind = caseless_string(path_kind)
-        if path_kind not in self.path_kinds:
-            msg = '{} is not a valid path_kind [{}]'
-            raise ValueError(msg.format(path_kind, ' '.join(self.path_kinds)))
-        self.path_kind = path_kind
+    def __init__(self, value, path_kind):
+        self.value = value
+
+        kind = caseless_string(kind)
+        if kind not in self.kinds:
+            msg = '{} is not a valid kind [{}]'
+            raise ValueError(msg.format(kind, ' '.join(self.kinds)))
+        self.kind = kind
 
     def __str__(self):
-        return self.path
+        return self.value
 
     def __repr__(self):
-        return '<{} ({})>'.format(self.path, self.path_kind)
+        return '<{} ({})>'.format(self.value, self.kind)
 
     def __fspath__(self):
         """Allow using with os.path operations"""
