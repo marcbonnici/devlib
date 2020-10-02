@@ -474,12 +474,11 @@ class BaylibreAcmeInstrument(Instrument):
             # self.data.index is in [us]
             # columns are in volts, amps and watts
 
-    def get_data(self, outfile=None, **to_csv_kwargs):
-        if outfile is None:
-            return self.data
-
-        self.data.to_csv(outfile, **to_csv_kwargs)
-        return MeasurementsCsv(outfile, self.active_channels)
+    def get_data(self, **to_csv_kwargs):
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
+        self.data.to_csv(self.output_path, **to_csv_kwargs)
+        return MeasurementsCsv(self.output_path, self.active_channels)
 
 class BaylibreAcmeLocalInstrument(BaylibreAcmeInstrument):
 

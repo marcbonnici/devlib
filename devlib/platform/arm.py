@@ -241,6 +241,7 @@ class JunoEnergyInstrument(Instrument):
         super(JunoEnergyInstrument, self).__init__(target)
         self.on_target_file = None
         self.command = None
+        self.output_path = None
         self.binary = self.target.bin(self.binname)
         for chan in self._channels:
             self.channels[chan.name] = chan
@@ -266,7 +267,9 @@ class JunoEnergyInstrument(Instrument):
         self.target.killall(self.binname, signal='TERM', as_root=True)
 
     # pylint: disable=arguments-differ
-    def get_data(self, output_file):
+    def get_data(self):
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
         temp_file = tempfile.mktemp()
         self.target.pull(self.on_target_file, temp_file)
         self.target.remove(self.on_target_file)
@@ -282,7 +285,7 @@ class JunoEnergyInstrument(Instrument):
                 except ValueError:
                     raise HostError('Channel "{}" is not in {}'.format(chan.name, temp_file))
 
-            with csvwriter(output_file) as writer:
+            with csvwriter(self.output_file) as writer:
                 write_headings = ['{}_{}'.format(c.site, c.kind)
                                   for c in self.active_channels]
                 writer.writerow(write_headings)
@@ -290,10 +293,11 @@ class JunoEnergyInstrument(Instrument):
                     write_row = [row[c] for c in select_columns]
                     writer.writerow(write_row)
 
-        return MeasurementsCsv(output_file, self.active_channels, sample_rate_hz=10)
+        return MeasurementsCsv(self.output_file, self.active_channels,
+                               sample_rate_hz=10)
 
     def take_measurement(self):
-        result = []
+        result = InstrumentOutput()
         output = self.target.execute(self.command2).split()
         with csvreader(output) as reader:
             headings = next(reader)

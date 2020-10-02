@@ -16,6 +16,7 @@ from __future__ import division
 import re
 
 from devlib.instrument import Instrument, Measurement, INSTANTANEOUS
+from devlib.instrument import InstrumentOutput
 from devlib.exception import TargetStableError
 
 
@@ -54,7 +55,7 @@ class HwmonInstrument(Instrument):
                 continue
 
     def take_measurement(self):
-        result = []
+        result = InstrumentOutput()
         for chan in self.active_channels:
             convert = self.measure_map[chan.sensor.kind][1]
             value = convert(chan.sensor.get('input'))

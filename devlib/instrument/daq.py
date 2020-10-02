@@ -21,6 +21,7 @@ from itertools import chain, zip_longest
 
 from devlib.host import PACKAGE_BIN_DIRECTORY
 from devlib.instrument import Instrument, MeasurementsCsv, CONTINUOUS
+from devlib.instrument import InstrumentOutput, InstrumentOutputEntry
 from devlib.exception import HostError
 from devlib.utils.csvutil import csvwriter, create_reader
 from devlib.utils.misc import unique
@@ -54,7 +55,8 @@ class DaqInstrument(Instrument):
         super(DaqInstrument, self).__init__(target)
         self.keep_raw = keep_raw
         self._need_reset = True
-        self._raw_files = []
+        self._raw_files = InstrumentOutput()
+        self.output_path = None
         self.tempdir = None
         self.target_monotonic_clock_at_start = 0.0
         if DaqClient is None:
@@ -109,7 +111,7 @@ class DaqInstrument(Instrument):
         self.daq_client.close()
         self.daq_client.configure(self.device_config)
         self._need_reset = False
-        self._raw_files = []
+        self._raw_files = InstrumentOutput()
 
     def start(self):
         if self._need_reset:
@@ -130,7 +132,9 @@ class DaqInstrument(Instrument):
         self.daq_client.stop()
         self._need_reset = True
 
-    def get_data(self, outfile):  # pylint: disable=R0914
+    def get_data(self):  # pylint: disable=R0914
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
         self.tempdir = tempfile.mkdtemp(prefix='daq-raw-')
         self.daq_client.get_data(self.tempdir)
         raw_file_map = {}
@@ -138,7 +142,7 @@ class DaqInstrument(Instrument):
             site = os.path.splitext(entry)[0]
             path = os.path.join(self.tempdir, entry)
             raw_file_map[site] = path
-            self._raw_files.append(path)
+            self._raw_files.append(InstrumentOutputEntry(path, 'file'))
 
         active_sites = unique([c.site for c in self.active_channels])
         file_handles = []
@@ -171,14 +175,16 @@ class DaqInstrument(Instrument):
 
             _read_rows.row_time_s = self.target_monotonic_clock_at_start
 
-            with csvwriter(outfile) as writer:
+            with csvwriter(self.output_path) as writer:
                 field_names = [c.label for c in self.active_channels]
                 writer.writerow(field_names)
                 for raw_row in _read_rows():
                     row = [raw_row[channel_order.index(f)] for f in field_names]
                     writer.writerow(row)
 
-            return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+            return MeasurementsCsv(self.output_path, self.active_channels,
+                                   self.sample_rate_hz)
+
         finally:
             for fh in file_handles:
                 fh.close()

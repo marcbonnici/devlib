@@ -17,7 +17,8 @@ from __future__ import division
 import os
 
 from devlib.instrument import (Instrument, CONTINUOUS,
-                               MeasurementsCsv, MeasurementType)
+                               MeasurementsCsv, MeasurementType,
+                               InstrumentOutput)
 from devlib.utils.rendering import (GfxinfoFrameCollector,
                                     SurfaceFlingerFrameCollector,
                                     SurfaceFlingerFrame,
@@ -58,16 +59,21 @@ class FramesInstrument(Instrument):
         self.collector.stop()
         self._need_reset = True
 
-    def get_data(self, outfile):
+    def get_data(self):
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
         if self.keep_raw:
-            self._raw_file = outfile + '.raw'
+            self._raw_file = self.output_path + '.raw'
         self.collector.process_frames(self._raw_file)
         active_sites = [chan.label for chan in self.active_channels]
-        self.collector.write_frames(outfile, columns=active_sites)
-        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+        self.collector.write_frames(self.output_path, columns=active_sites)
+        return MeasurementsCsv(self.output_path, self.active_channels, self.sample_rate_hz)
 
     def get_raw(self):
-        return [self._raw_file] if self._raw_file else []
+        out = InstrumentOutput()
+        if self._raw_file:
+            out.append(InstrumentOutputEntry(self.raw_data_file, 'file'))
+        return out
 
     def _init_channels(self):
         raise NotImplementedError()

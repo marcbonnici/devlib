@@ -22,6 +22,8 @@ import sys
 from pipes import quote
 
 from devlib.instrument import Instrument, CONTINUOUS, MeasurementsCsv
+from devlib.instrument import InstrumentOutput, InstrumentOutputEntry
+
 from devlib.exception import HostError
 from devlib.utils.csvutil import csvwriter
 from devlib.utils.misc import which
@@ -96,7 +98,9 @@ class EnergyProbeInstrument(Instrument):
                                                   stdout, stderr))
         os.killpg(self.process.pid, signal.SIGINT)
 
-    def get_data(self, outfile):  # pylint: disable=R0914
+    def get_data(self):  # pylint: disable=R0914
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
         all_channels = [c.label for c in self.list_channels()]
         active_channels = [c.label for c in self.active_channels]
         active_indexes = [all_channels.index(ac) for ac in active_channels]
@@ -108,7 +112,7 @@ class EnergyProbeInstrument(Instrument):
 
         self.logger.debug('Parsing raw data file: {}'.format(self.raw_data_file))
         with open(self.raw_data_file, 'rb') as bfile:
-            with csvwriter(outfile) as writer:
+            with csvwriter(self.output_path) as writer:
                 writer.writerow(active_channels)
                 while True:
                     data = bfile.read(num_of_ports * self.bytes_per_sample)
@@ -124,10 +128,10 @@ class EnergyProbeInstrument(Instrument):
                             continue
                         else:
                             not_a_full_row_seen = True
-        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+        return MeasurementsCsv(self.output_path, self.active_channels, self.sample_rate_hz)
 
     def get_raw(self):
-        return [self.raw_data_file]
+        return InstrumentOutput(InstrumentOutputEntry(self.raw_data_file, 'file'))
 
     def teardown(self):
         if self.keep_raw:

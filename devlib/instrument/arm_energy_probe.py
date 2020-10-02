@@ -40,6 +40,7 @@ import tempfile
 import shutil
 
 from devlib.instrument import Instrument, CONTINUOUS, MeasurementsCsv
+from devlib.instrument import InstrumentOutput, InstrumentOutputEntry
 from devlib.exception import HostError
 from devlib.utils.csvutil import csvreader, csvwriter
 from devlib.utils.misc import which
@@ -112,7 +113,9 @@ class ArmEnergyProbeInstrument(Instrument):
         self.logger.debug("kill running arm-probe")
         os.killpg(self.armprobe.pid, signal.SIGTERM)
 
-    def get_data(self, outfile):  # pylint: disable=R0914
+    def get_data(self):  # pylint: disable=R0914
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
         self.logger.debug("Parse data and compute consumed energy")
         self.parser.prepare(self.output_file_raw, self.output_file, self.output_file_figure)
         self.parser.parse_aep()
@@ -124,7 +127,7 @@ class ArmEnergyProbeInstrument(Instrument):
         active_indexes = [all_channels.index(ac) for ac in active_channels]
 
         with csvreader(self.output_file, delimiter=' ') as reader:
-            with csvwriter(outfile) as writer:
+            with csvwriter(self.output_path) as writer:
                 for row in reader:
                     if skip_header == 1:
                         writer.writerow(active_channels)
@@ -139,10 +142,11 @@ class ArmEnergyProbeInstrument(Instrument):
         self.output_fd_error.close()
         shutil.rmtree(self.output_directory)
 
-        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+        return MeasurementsCsv(self.output_path, self.active_channels,
+                               self.sample_rate_hz)
 
     def get_raw(self):
-        return [self.output_file_raw]
+        return InstrumentOutput(InstrumentOutputEntry(self.output_file_raw, 'file'))
 
     def teardown(self):
         if not self.keep_raw:

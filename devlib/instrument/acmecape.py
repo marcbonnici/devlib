@@ -26,6 +26,7 @@ from subprocess import Popen, PIPE, STDOUT
 from pipes import quote
 
 from devlib import Instrument, CONTINUOUS, MeasurementsCsv
+from devlib.instrument import InstrumentOutput, InstrumentOutputEntry
 from devlib.exception import HostError
 from devlib.utils.csvutil import csvreader, csvwriter
 from devlib.utils.misc import which
@@ -85,14 +86,14 @@ class AcmeCapeInstrument(Instrument):
 
     def reset(self, sites=None, kinds=None, channels=None):
         super(AcmeCapeInstrument, self).reset(sites, kinds, channels)
-        self.raw_data_file = tempfile.mkstemp('.csv')[1]
+        self.raw_data_file = InstrumentOutputEntry(tempfile.mkstemp('.csv')[1], 'file')
         params = dict(
             iio_capture=self.iio_capture,
             host=self.host,
             # This must be a string for quote()
             buffer_size=str(self.buffer_size),
             iio_device=self.iio_device,
-            outfile=self.raw_data_file
+            outfile=self.raw_data_file.path
         )
         params = {k: quote(v) for k, v in params.items()}
         self.command = IIOCAP_CMD_TEMPLATE.substitute(**params)
@@ -130,7 +131,9 @@ class AcmeCapeInstrument(Instrument):
             raise HostError('Output CSV not generated.')
         self.process = None
 
-    def get_data(self, outfile):
+    def get_data(self):
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
         if os.stat(self.raw_data_file).st_size == 0:
             self.logger.warning('"{}" appears to be empty'.format(self.raw_data_file))
             return
@@ -140,7 +143,7 @@ class AcmeCapeInstrument(Instrument):
         active_indexes = [all_channels.index(ac) for ac in active_channels]
 
         with csvreader(self.raw_data_file, skipinitialspace=True) as reader:
-            with csvwriter(outfile) as writer:
+            with csvwriter(self.output_path) as writer:
                 writer.writerow(active_channels)
 
                 header = next(reader)
@@ -157,10 +160,12 @@ class AcmeCapeInstrument(Instrument):
                             # Convert rest into standard units.
                             output_row.append(float(row[i])/1000)
                     writer.writerow(output_row)
-        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+
+        return MeasurementsCsv(self.output_path, self.active_channels,
+                               self.sample_rate_hz)
 
     def get_raw(self):
-        return [self.raw_data_file]
+        return InstrumentOutput(InstrumentOutputEntry(self.raw_data_file), 'file')
 
     def teardown(self):
         if not self.keep_raw:

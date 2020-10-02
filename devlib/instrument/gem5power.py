@@ -63,15 +63,17 @@ class Gem5PowerInstrument(Instrument):
     def stop(self):
         self.target.gem5stats.roi_end(self.roi_label)
 
-    def get_data(self, outfile):
+    def get_data(self):
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
         active_sites = [c.site for c in self.active_channels]
-        with csvwriter(outfile) as writer:
+        with csvwriter(self.output_path) as writer:
             writer.writerow([c.label for c in self.active_channels]) # headers
             sites_to_match = [self.site_mapping.get(s, s) for s in active_sites]
             for rec, _ in self.target.gem5stats.match_iter(sites_to_match,
                     [self.roi_label], self._base_stats_dump):
                 writer.writerow([rec[s] for s in sites_to_match])
-        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+        return MeasurementsCsv(self.output_path, self.active_channels, self.sample_rate_hz)
 
     def reset(self, sites=None, kinds=None, channels=None):
         super(Gem5PowerInstrument, self).reset(sites, kinds, channels)

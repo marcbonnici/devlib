@@ -20,6 +20,7 @@ from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 
 from devlib.instrument import Instrument, CONTINUOUS, MeasurementsCsv
+
 from devlib.exception import HostError
 from devlib.utils.csvutil import csvwriter
 from devlib.utils.misc import which
@@ -120,13 +121,15 @@ class MonsoonInstrument(Instrument):
 
         self.output = (stdout, stderr)
 
-    def get_data(self, outfile):
+    def get_data(self):
         if self.process:
             raise RuntimeError('`get_data` called before `stop`')
+        if self.output_path is None:
+            raise RuntimeError("Output path was not set.")
 
         stdout, _ = self.output
 
-        with csvwriter(outfile) as writer:
+        with csvwriter(self.output_path) as writer:
             active_sites = [c.site for c in self.active_channels]
 
             # Write column headers
@@ -150,4 +153,4 @@ class MonsoonInstrument(Instrument):
                     row.append(usb)
                 writer.writerow(row)
 
-        return MeasurementsCsv(outfile, self.active_channels, self.sample_rate_hz)
+        return MeasurementsCsv(self.output_path, self.active_channels, self.sample_rate_hz)
