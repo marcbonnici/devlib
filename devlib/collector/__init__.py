@@ -17,6 +17,7 @@ import logging
 
 from devlib.utils.types import caseless_string
 
+
 class CollectorBase(object):
 
     def __init__(self, target):
@@ -46,6 +47,7 @@ class CollectorBase(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop()
+
 
 class CollectorOutputEntry(object):
 

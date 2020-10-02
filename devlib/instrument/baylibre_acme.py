@@ -87,7 +87,7 @@ def only_set_to(valid_values, dynamic=False):
         def wrapper(self, value):
             values = (valid_values if not dynamic
                       else getattr(self, valid_values))
-            if value not in values: 
+            if value not in values:
                 msg = '{} is invalid; expected values are {}'
                 raise ValueError(msg.format(value, valid_values))
             return func(self, value)
@@ -523,7 +523,7 @@ class BaylibreAcmeNetworkInstrument(BaylibreAcmeInstrument):
         try:
             self.ssh_connection = SshConnection(hostname, username='root', password=None)
         except TargetError as e:
-            msg = 'No SSH connexion could be established to {}: {}'
+            msg = 'No SSH connection could be established to {}: {}'
             self.logger.debug(msg.format(hostname, e))
             self.ssh_connection = None
 

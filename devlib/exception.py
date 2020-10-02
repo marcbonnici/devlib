@@ -123,7 +123,7 @@ class KernelConfigKeyError(KeyError, IndexError, DevlibError):
 
 def get_traceback(exc=None):
     """
-    Returns the string with the traceback for the specifiec exc
+    Returns the string with the traceback for the specified exc
     object, or for the current exception exc is not specified.
 
     """
