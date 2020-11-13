@@ -317,10 +317,9 @@ class FtraceCollector(CollectorBase):
                             timeout=TIMEOUT, as_root=True)
 
         # The size of trace.dat will depend on how long trace-cmd was running.
-        # Therefore timout for the pull command must also be adjusted
-        # accordingly.
-        pull_timeout = 10 * (self.stop_time - self.start_time)
-        self.target.pull(self.target_output_file, self.output_path, timeout=pull_timeout)
+        # If transfer monitoring is required, allow the polling mechinsm to
+        # be enabled to track the status of the transfer.
+        self.target.pull(self.target_output_file, self.output_path)
         output = CollectorOutput()
         if not os.path.isfile(self.output_path):
             self.logger.warning('Binary trace not pulled from device.')
@@ -331,7 +330,7 @@ class FtraceCollector(CollectorBase):
                 if self.report_on_target:
                     self.generate_report_on_target()
                     self.target.pull(self.target_text_file,
-                                     textfile, timeout=pull_timeout)
+                                     textfile)
                 else:
                     self.report(self.output_path, textfile)
                 output.append(CollectorOutputEntry(textfile, 'file'))
