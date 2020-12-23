@@ -68,6 +68,11 @@ class Platform(object):
         # setup procedures.
         pass
 
+    def teardown_target_connection(self, target):
+        # May be ovewritten by subclasses to provide target-specific
+        # connection teardown.
+        pass
+
     def _set_core_clusters_from_core_names(self):
         self.core_clusters = []
         clusters = []

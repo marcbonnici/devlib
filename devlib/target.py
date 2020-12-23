@@ -318,6 +318,7 @@ class Target(object):
         connections = self._conn.get_all_values()
         for conn in connections:
             conn.close()
+        self.platform.teardown_target_connection(self)
 
     def get_connection(self, timeout=None):
         if self.conn_cls is None:
