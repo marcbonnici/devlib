@@ -83,19 +83,15 @@ params = dict(
     license='Apache v2',
     maintainer='ARM Ltd.',
     install_requires=[
-        'python-dateutil',  # converting between UTC and local time.
+        'enum34;python_version<"3.4"', # Enums for Python < 3.4
+        'numpy',
+        'pandas',
+        'paramiko', # SSH connection
         'pexpect>=3.3',  # Send/recieve to/from device
         'pyserial',  # Serial port interface
-        'paramiko', # SSH connection
+        'python-dateutil',  # converting between UTC and local time.
         'scp', # SSH connection file transfers
         'wrapt',  # Basic for construction of decorator functions
-        'future', # Python 2-3 compatibility
-        'enum34;python_version<"3.4"', # Enums for Python < 3.4
-        'contextlib2;python_version<"3.0"', # Python 3 contextlib backport for Python 2
-        'numpy<=1.16.4; python_version<"3"',
-        'numpy; python_version>="3"',
-        'pandas<=0.24.2; python_version<"3"',
-        'pandas; python_version>"3"',
     ],
     extras_require={
         'daq': ['daqpower>=2'],
