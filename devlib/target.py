@@ -137,7 +137,14 @@ class Target(object):
 
     @property
     def hostid(self):
-        return int(self.execute('{} hostid'.format(self.busybox)).strip(), 16)
+        ret = 0
+        try:
+            ret = int(self.execute('{} hostid'.format(self.busybox)).strip(), 16)
+        except TargetError:
+            # best effort -- busybox's hostid is known to cause segfaults on some devices
+            # https://github.com/ARM-software/devlib/pull/540
+            pass
+        return ret
 
     @property
     def hostname(self):
