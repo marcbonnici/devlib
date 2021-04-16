@@ -88,10 +88,10 @@ params = dict(
         'future', # Python 2-3 compatibility
         'enum34;python_version<"3.4"', # Enums for Python < 3.4
         'contextlib2;python_version<"3.0"', # Python 3 contextlib backport for Python 2
-        'numpy<=1.16.4; python_version<"3"',
-        'numpy; python_version>="3"',
-        'pandas<=0.24.2; python_version<"3"',
-        'pandas; python_version>"3"',
+        'numpy<=1.18.5; python_version<="3.5"',
+        'numpy; python_version>="3.5"',
+        'pandas<=0.24.2; python_version<="3.5"',
+        'pandas; python_version>"3.5"',
         'lxml', # More robust xml parsing
     ],
     extras_require={
