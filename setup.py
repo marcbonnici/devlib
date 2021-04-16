@@ -99,6 +99,7 @@ params = dict(
         'doc': ['sphinx'],
         'monsoon': ['python-gflags'],
         'acme': ['pandas', 'numpy'],
+        'test': ['pytest'],
     },
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
