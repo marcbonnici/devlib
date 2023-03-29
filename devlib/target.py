@@ -1895,7 +1895,7 @@ class AndroidTarget(Target):
     @asyn.asyncf
     async def ps(self, threads=False, **kwargs):
         maxsplit = 9 if threads else 8
-        command = 'ps'
+        command = 'ps -o user,pid,ppid,vsz,rss,stat,comm'
         if threads:
             command = 'ps -AT'
 
@@ -1907,19 +1907,25 @@ class AndroidTarget(Target):
             if not parts:
                 continue
 
-            wchan_missing = False
-            if len(parts) == maxsplit:
-                wchan_missing = True
+            user = parts[0]
+            pid, ppid = map(int,parts[1:3])
+            rss = int(parts[4])
+            state, name = parts[5:]
 
-            if not threads:
-                # Duplicate PID into TID location.
-                parts.insert(2, parts[1])
+            # Missing threads entry so duplicate PID into TID.
+            tid = pid
+            # Missing wchan & pc, use dummy values
+            wchan, pc = 0, 0
 
-            if wchan_missing:
-                # wchan was blank; insert an empty field where it should be.
-                parts.insert(6, '')
-            result.append(PsEntry(*(parts[0:1] + list(map(int, parts[1:6])) + parts[6:])))
-        if not kwargs:
+            # Concert vsize to bytes from human readable format
+            vsize = parts[3]
+            if 'm' in  vsize:
+                vsize = int(vsize.strip('m'))*1024
+            elif 'g' in  vsize:
+                vsize = int(float(vsize.strip('g'))*1024*1024)
+
+            result.append(PsEntry(user, pid, tid, ppid, vsize, rss, wchan, pc, state, name))
+
             return result
         else:
             filtered_result = []
